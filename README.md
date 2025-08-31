@@ -1,7 +1,7 @@
 # 🚌 NextStop - Bus Tracking System
 
 <div align="center">
-  <img src="nextpublic/passlogo.jpg" width="120" alt="NextStop Logo"/>
+  <img src="nextstop-webapp\public\passlogo.jpg" width="120" alt="NextStop Logo"/>
   <br/>
   <strong>🌟 Modern Real-Time Bus Tracking for Your City 🌟</strong>
   <br/>
