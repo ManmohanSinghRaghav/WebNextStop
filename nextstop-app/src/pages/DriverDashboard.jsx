@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../hooks/useAuth'
+import { MathuraDataService } from '../services/MathuraDataService'
 
 export default function DriverDashboard() {
   const navigate = useNavigate()

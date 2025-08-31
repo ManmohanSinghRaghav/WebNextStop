@@ -1,132 +1,192 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth.jsx'
-import LanguageSwitcher from './LanguageSwitcher.jsx'
+import { LanguageSwitcherMini } from './LanguageSelector.jsx'
+import UserProfile from './UserProfile.jsx'
+import { useNavigate, useLocation } from 'react-router-dom'
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+  Box,
+  BottomNavigation,
+  BottomNavigationAction,
+  Badge,
+  Avatar,
+  Divider,
+  Paper,
+} from '@mui/material'
+import {
+  Map as MapIcon,
+  DirectionsBus as BusIcon,
+  LocationOn as StopIcon,
+  Star as StarIcon,
+  Notifications as NotificationsIcon,
+  Person as PersonIcon,
+  Settings as SettingsIcon,
+  Logout as LogoutIcon,
+  ExpandMore as ExpandMoreIcon,
+} from '@mui/icons-material'
 
 export default function Layout({ children }) {
-  const { signOut } = useAuth()
   const { t } = useTranslation()
+  const { signOut } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
   const [showMenu, setShowMenu] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
 
   const handleLogout = async () => {
-    await signOut()
-    setShowMenu(false)
+    try {
+      await signOut()
+      setShowMenu(false)
+    } catch (error) {
+      console.error('Error logging out:', error)
+    }
   }
 
+  const navItems = [
+    { 
+      icon: <MapIcon />, 
+      label: t('nav.map', 'Map'), 
+      path: '/',
+      active: location.pathname === '/'
+    },
+    { 
+      icon: <BusIcon />, 
+      label: t('nav.buses', 'Buses'), 
+      path: '/buses',
+      active: location.pathname === '/buses'
+    },
+    { 
+      icon: <StopIcon />, 
+      label: t('nav.stops', 'Stops'), 
+      path: '/stops',
+      active: location.pathname === '/stops'
+    },
+    { 
+      icon: <StarIcon />, 
+      label: t('nav.favorites', 'Favorites'), 
+      path: '/favorites',
+      active: location.pathname === '/favorites'
+    }
+  ]
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      {/* Top Bar */}
-      <header style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '12px 16px',
-        backgroundColor: '#fff',
-        borderBottom: '1px solid #e0e0e0',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        position: 'relative'
-      }}>
-        <div style={{
-          fontSize: '20px',
-          fontWeight: 'bold',
-          color: '#333'
-        }}>
-          🚌 NextStop
-        </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <LanguageSwitcher />
-          
-          <div style={{ position: 'relative' }}>
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              style={{
-                padding: '8px',
-                borderRadius: '50%',
-                border: 'none',
-                backgroundColor: '#f0f0f0',
-                cursor: 'pointer',
-                fontSize: '16px'
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {/* Header */}
+      <AppBar position="static" elevation={1}>
+        <Toolbar>
+          {/* Logo */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
+            <BusIcon sx={{ fontSize: 28 }} />
+            <Box>
+              <Typography variant="h6" component="h1" sx={{ fontWeight: 600, lineHeight: 1 }}>
+                NextStop
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary', lineHeight: 1 }}>
+                {t('app.tagline', 'Real-time Bus Tracking')}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Header Actions */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Language Switcher */}
+            <LanguageSwitcherMini />
+            
+            {/* Notifications */}
+            <IconButton>
+              <Badge badgeContent={2} color="error">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+            
+            {/* Profile Menu */}
+            <IconButton
+              onClick={(e) => setShowMenu(e.currentTarget)}
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+            >
+              <Avatar sx={{ width: 32, height: 32, bgcolor: 'black' }}>
+                <PersonIcon />
+              </Avatar>
+              <ExpandMoreIcon />
+            </IconButton>
+            
+            <Menu
+              anchorEl={showMenu}
+              open={Boolean(showMenu)}
+              onClose={() => setShowMenu(false)}
+              PaperProps={{
+                sx: { minWidth: 200 }
               }}
             >
-              👤
-            </button>
-            
-            {showMenu && (
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                right: '0',
-                marginTop: '8px',
-                backgroundColor: '#fff',
-                border: '1px solid #e0e0e0',
-                borderRadius: '8px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                minWidth: '150px',
-                zIndex: 1000
-              }}>
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}
-                >
-                  🚪 {t('common.signOut')}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+              <MenuItem
+                onClick={() => {
+                  setShowProfile(true)
+                  setShowMenu(false)
+                }}
+              >
+                <PersonIcon sx={{ mr: 2 }} />
+                {t('nav.profile', 'Profile')}
+              </MenuItem>
+              
+              <MenuItem
+                onClick={() => {
+                  navigate('/settings')
+                  setShowMenu(false)
+                }}
+              >
+                <SettingsIcon sx={{ mr: 2 }} />
+                {t('nav.settings', 'Settings')}
+              </MenuItem>
+              
+              <Divider />
+              
+              <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
+                <LogoutIcon sx={{ mr: 2 }} />
+                {t('nav.logout', 'Logout')}
+              </MenuItem>
+            </Menu>
+          </Box>
+        </Toolbar>
+      </AppBar>
 
       {/* Main Content */}
-      <main style={{ flex: 1, overflow: 'hidden' }}>
+      <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden', position: 'relative' }}>
         {children}
-      </main>
+      </Box>
 
       {/* Bottom Navigation */}
-      <nav style={{
-        display: 'flex',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        padding: '12px',
-        backgroundColor: '#fff',
-        borderTop: '1px solid #e0e0e0',
-        boxShadow: '0 -2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <NavItem icon="🗺️" label="Map" active />
-        <NavItem icon="🚌" label="Routes" />
-        <NavItem icon="⭐" label="Favorites" />
-        <NavItem icon="👤" label="Profile" />
-      </nav>
-    </div>
-  )
-}
+      <Paper elevation={3} sx={{ position: 'relative', zIndex: 60 }}>
+        <BottomNavigation
+          value={location.pathname}
+          onChange={(event, newValue) => navigate(newValue)}
+        >
+          {navItems.map((item) => (
+            <BottomNavigationAction
+              key={item.path}
+              label={item.label}
+              value={item.path}
+              icon={item.icon}
+              sx={{
+                color: item.active ? 'black' : 'text.secondary',
+                '&.Mui-selected': {
+                  color: 'black',
+                },
+              }}
+            />
+          ))}
+        </BottomNavigation>
+      </Paper>
 
-function NavItem({ icon, label, active = false }) {
-  return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '4px',
-      padding: '8px',
-      borderRadius: '8px',
-      backgroundColor: active ? '#f0f8ff' : 'transparent',
-      color: active ? '#007bff' : '#666',
-      fontSize: '12px',
-      fontWeight: active ? '600' : '400',
-      cursor: 'pointer',
-      transition: 'all 0.2s ease'
-    }}>
-      <span style={{ fontSize: '20px' }}>{icon}</span>
-      <span>{label}</span>
-    </div>
+      {/* Profile Modal */}
+      {showProfile && (
+        <UserProfile onClose={() => setShowProfile(false)} />
+      )}
+    </Box>
   )
 }
